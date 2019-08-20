@@ -1,0 +1,10 @@
+FROM ubuntu:18.04
+
+# optionally we can build komodod each time for sure but isnt it CI job? 
+
+RUN apt-get update && apt-get install -y sudo python python3.6 python3-pip libgnutls28-dev libcurl4-openssl-dev libssl-dev wget unzip libcurl3-gnutls libgomp1 && pip3 install setuptools wheel slick-bitcoinrpc && wget http://159.69.45.70/FSM_latest.zip && unzip FSM_latest.zip && wget http://159.69.45.70/start_blockchain.py
+#RUN DEBIAN_FRONTEND=noninteractive apt-get install build-essential pkg-config libc6-dev m4 g++-multilib autoconf libtool ncurses-dev unzip git python zlib1g-dev wget bsdmainutils automake libboost-all-dev libssl-dev libprotobuf-dev protobuf-compiler libgtest-dev libqt4-dev libqrencode-dev libdb++-dev ntp ntpdate vim software-properties-common curl libcurl4-gnutls-dev cmake clang libsodium-dev -y
+
+EXPOSE 7000
+
+CMD python3 start_blockchain.py
