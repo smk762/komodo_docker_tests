@@ -14,7 +14,7 @@ from slickrpc import Proxy
 clients_to_start = os.environ['CLIENTS']
 ac_name = os.environ['CHAIN']
 test_address = os.environ['TEST_ADDY']
-test_address = os.environ['TEST_WIF']
+test_wif = os.environ['TEST_WIF']
 test_pubkey = os.environ['TEST_PUBKEY']
 
 # pre-creating separate folders and configs
