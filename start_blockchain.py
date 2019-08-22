@@ -7,6 +7,9 @@ from slickrpc import Proxy
 # init params
 clients_to_start = 2
 ac_name = 'TESTCHAIN'
+test_address = 'R9imXLs1hEcU9KbFDQq2hJEEJ1P5UoekaF'
+test_wif = 'UqqW7f766rADem9heD8vSBvvrdfJb3zg5r8du9rJxPtccjWf7RG9'
+test_pubkey = '021607076d7a2cb148d542fb9644c04ffc22d2cca752f80755a0402a24c567b17a'
 
 # pre-creating separate folders and configs
 for i in range(clients_to_start):
@@ -19,21 +22,18 @@ for i in range(clients_to_start):
         conf.write("rpcbind=0.0.0.0\n")
         conf.write("rpcallowip=0.0.0.0/0\n")
 
-#TODO: load bootstrap with 128 premined blocks
-#TODO: can easily import hardcoded WIF and setpubkeys if needed via RPC proxy call to use relevant addresses in tests
-
 #start numnodes daemons, changing folder name and port
 for i in range(clients_to_start):
     # all nodes should search for first "mother" node
     if i == 0:
         subprocess.call(['./komodod', '-ac_name='+ac_name, '-conf=' + sys.path[0] + '/node_' + str(i) + "/" + ac_name + ".conf",
                          '-rpcport=' + str(7000 + i), '-port=' + str(8000 + i), '-datadir=' + sys.path[0] + '/node_' + str(i),
-                         '-ac_supply=10000000000', '-ac_cc=2', '-whitelist=127.0.0.1', '-daemon'])
+                         '-ac_supply=10000000000', '-ac_cc=2', '-whitelist=127.0.0.1', '-regtest', '-daemon'])
         time.sleep(5)
     else:
         subprocess.call(['./komodod', '-ac_name='+ac_name, '-conf=' + sys.path[0] + '/node_' + str(i) + "/" + ac_name + ".conf",
                          '-rpcport=' + str(7000 + i), '-port=' + str(8000 + i), '-datadir=' + sys.path[0] + '/node_' + str(i),
-                         '-ac_supply=10000000000', '-ac_cc=2', '-addnode=127.0.0.1:8000', '-whitelist=127.0.0.1', '-listen=0', '-daemon'])
+                         '-ac_supply=10000000000', '-ac_cc=2', '-addnode=127.0.0.1:8000', '-whitelist=127.0.0.1', '-regtest', '-listen=0', '-pubkey='+test_pubkey, '-daemon'])
         time.sleep(5)
 
 #creating rpc proxies for all nodes
@@ -53,9 +53,10 @@ for i in range(clients_to_start):
            print(e)
            time.sleep(2)
 
-# starting mining on second node
-proxy_1.setgenerate(True, 1)
+# importing test address to public node
+proxy_0.importprivkey(test_wif)
 
-# crutch - we want two (or more) daemon processes in single image (to abstract to "blockchain" rather than "node") and dont want container to stop
+# starting blocks creation on second node, mining rewards will get first public node because of pubkey param
 while True:
-    time.sleep(77777777)
+   proxy_1.generate(1)
+   time.sleep(5)
