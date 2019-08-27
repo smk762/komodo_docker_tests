@@ -8,4 +8,4 @@ EXPOSE 7000
 COPY start_blockchain.py /
 COPY komodod /
 
-CMD python3 /start_blockchain.py
+CMD python3 -u /start_blockchain.py
