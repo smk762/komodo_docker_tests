@@ -11,7 +11,7 @@ from slickrpc import Proxy
 #test_wif = 'UqqW7f766rADem9heD8vSBvvrdfJb3zg5r8du9rJxPtccjWf7RG9'
 #test_pubkey = '021607076d7a2cb148d542fb9644c04ffc22d2cca752f80755a0402a24c567b17a'
 
-clients_to_start = os.environ['CLIENTS']
+clients_to_start = int(os.environ['CLIENTS'])
 ac_name = os.environ['CHAIN']
 test_address = os.environ['TEST_ADDY']
 test_wif = os.environ['TEST_WIF']
