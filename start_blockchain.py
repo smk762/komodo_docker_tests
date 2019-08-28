@@ -64,5 +64,9 @@ proxy_0.importprivkey(test_wif)
 
 # starting blocks creation on second node, mining rewards will get first public node because of pubkey param
 while True:
-   proxy_1.generate(1)
-   time.sleep(5)
+   if int(os.environ['CLIENTS']) > 1:
+       proxy_1.generate(1)
+       time.sleep(5)
+   else:
+       proxy_0.generate(1)
+       time.sleep(5)  
