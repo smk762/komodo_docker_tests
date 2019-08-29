@@ -16,6 +16,8 @@ ac_name = os.environ['CHAIN']
 test_address = os.environ['TEST_ADDY']
 test_wif = os.environ['TEST_WIF']
 test_pubkey = os.environ['TEST_PUBKEY']
+# expecting REGTEST or REGULAR there
+chain_start_mode = os.environ['CHAIN_MODE']
 
 # pre-creating separate folders and configs
 for i in range(clients_to_start):
@@ -32,14 +34,27 @@ for i in range(clients_to_start):
 for i in range(clients_to_start):
     # all nodes should search for first "mother" node
     if i == 0:
-        subprocess.call(['./komodod', '-ac_name='+ac_name, '-conf=' + sys.path[0] + '/node_' + str(i) + "/" + ac_name + ".conf",
+        start_args = ['./komodod', '-ac_name='+ac_name, '-conf=' + sys.path[0] + '/node_' + str(i) + "/" + ac_name + ".conf",
                          '-rpcport=' + str(7000 + i), '-port=' + str(8000 + i), '-datadir=' + sys.path[0] + '/node_' + str(i),
-                         '-ac_supply=10000000000', '-ac_cc=2', '-whitelist=127.0.0.1', '-regtest', '-daemon'])
+                         '-ac_supply=10000000000', '-ac_cc=2', '-whitelist=127.0.0.1']
+        if chain_start_mode == 'REGTEST':
+            start_args.append('-regtest')
+            start_args.append('-daemon')
+        else:
+            start_args.append('-daemon')
+        subprocess.call(start_args)
         time.sleep(5)
     else:
-        subprocess.call(['./komodod', '-ac_name='+ac_name, '-conf=' + sys.path[0] + '/node_' + str(i) + "/" + ac_name + ".conf",
+        start_args = ['./komodod', '-ac_name='+ac_name, '-conf=' + sys.path[0] + '/node_' + str(i) + "/" + ac_name + ".conf",
                          '-rpcport=' + str(7000 + i), '-port=' + str(8000 + i), '-datadir=' + sys.path[0] + '/node_' + str(i),
-                         '-ac_supply=10000000000', '-ac_cc=2', '-addnode=127.0.0.1:8000', '-whitelist=127.0.0.1', '-regtest', '-listen=0', '-pubkey='+test_pubkey, '-daemon'])
+                         '-ac_supply=10000000000', '-ac_cc=2', '-addnode=127.0.0.1:8000', '-whitelist=127.0.0.1', '-listen=0', '-pubkey='+test_pubkey]
+        if chain_start_mode == 'REGTEST':
+            start_args.append('-regtest')
+            start_args.append('-daemon')
+        else:
+            start_args.append('-daemon')
+        subprocess.call(start_args)
+        subprocess.call(start_args)
         time.sleep(5)
 
 #creating rpc proxies for all nodes
@@ -63,10 +78,16 @@ for i in range(clients_to_start):
 proxy_0.importprivkey(test_wif)
 
 # starting blocks creation on second node, mining rewards will get first public node because of pubkey param
-while True:
-   if int(os.environ['CLIENTS']) > 1:
-       proxy_1.generate(1)
-       time.sleep(5)
-   else:
-       proxy_0.generate(1)
-       time.sleep(5)  
+if chain_start_mode == 'REGTEST':
+    while True:
+       if int(os.environ['CLIENTS']) > 1:
+           proxy_1.generate(1)
+           time.sleep(5)
+       else:
+           proxy_0.generate(1)
+           time.sleep(5)
+else:
+    if int(os.environ['CLIENTS']) > 1:
+        proxy_1.setgenerate(True, 1)
+    else:
+        proxy_0.setgenerate(True, 1)
