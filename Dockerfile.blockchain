@@ -1,11 +1,31 @@
 FROM ubuntu:18.04
 
-# optionally we can build komodod each time for sure but isnt it CI job? 
+# optionally we can build komodod each time for sure but isnt it CI job?
 RUN apt-get update && apt-get install -y sudo python python3.6 python3-pip libgnutls28-dev libcurl4-openssl-dev libssl-dev wget unzip libcurl3-gnutls libgomp1 && pip3 install setuptools wheel slick-bitcoinrpc
 
+# SPV setup
+COPY ./bin /usr/local/bin
+RUN apt-get install -y git libsnappy-dev libbz2-dev liblz4-dev librocksdb-dev openssl && pip3 install aiohttp pylru plyvel websockets python-rocksdb && git clone https://github.com/cipig/electrumx -b verus_hash2b && cd electrumx && python3 setup.py install
+
+VOLUME ["/data"]
+ENV HOME /data
+ENV ALLOW_ROOT 1
+ENV DB_DIRECTORY /data
+ENV SERVICES=tcp://:50001,ssl://:50002,wss://:50004,rpc://0.0.0.0:8000
+ENV SSL_CERTFILE ${DB_DIRECTORY}/electrumx.crt
+ENV SSL_KEYFILE ${DB_DIRECTORY}/electrumx.key
+ENV HOST ""
+WORKDIR /data
+
+# spv ports
+EXPOSE 50001 50002 50004 8000
+
+# daemon port
 EXPOSE 7000
 
-COPY start_blockchain.py /
-COPY komodod /
+COPY start_blockchain.py /data/
+COPY komodod /data/
+COPY start_things.sh /data/
+COPY bin/init /data/
 
-CMD python3 -u /start_blockchain.py
+CMD ./start_things.sh >> log.log

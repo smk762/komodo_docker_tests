@@ -21,9 +21,9 @@ chain_start_mode = os.environ['CHAIN_MODE']
 
 # pre-creating separate folders and configs
 for i in range(clients_to_start):
-    os.mkdir("node_" + str(i))
-    open("node_" + str(i) + "/" + ac_name + ".conf", 'a').close()
-    with open("node_" + str(i) + "/" + ac_name + ".conf", 'a') as conf:
+    os.mkdir("/data/node_" + str(i))
+    open("/data/node_" + str(i) + "/" + ac_name + ".conf", 'a').close()
+    with open("/data/node_" + str(i) + "/" + ac_name + ".conf", 'a') as conf:
         conf.write("rpcuser=test" + '\n')
         conf.write("rpcpassword=test" + '\n')
         conf.write("rpcport=" + str(7000 + i) + '\n')
@@ -35,7 +35,7 @@ for i in range(clients_to_start):
     # all nodes should search for first "mother" node
     if i == 0:
         start_args = ['./komodod', '-ac_name='+ac_name, '-conf=' + sys.path[0] + '/node_' + str(i) + "/" + ac_name + ".conf",
-                         '-rpcport=' + str(7000 + i), '-port=' + str(8000 + i), '-datadir=' + sys.path[0] + '/node_' + str(i),
+                         '-rpcport=' + str(7000 + i), '-port=' + str(6000 + i), '-datadir=' + sys.path[0] + '/node_' + str(i),
                          '-ac_supply=10000000000', '-ac_cc=2', '-whitelist=127.0.0.1']
         if chain_start_mode == 'REGTEST':
             start_args.append('-regtest')
@@ -46,8 +46,8 @@ for i in range(clients_to_start):
         time.sleep(5)
     else:
         start_args = ['./komodod', '-ac_name='+ac_name, '-conf=' + sys.path[0] + '/node_' + str(i) + "/" + ac_name + ".conf",
-                         '-rpcport=' + str(7000 + i), '-port=' + str(8000 + i), '-datadir=' + sys.path[0] + '/node_' + str(i),
-                         '-ac_supply=10000000000', '-ac_cc=2', '-addnode=127.0.0.1:8000', '-whitelist=127.0.0.1', '-listen=0', '-pubkey='+test_pubkey]
+                         '-rpcport=' + str(7000 + i), '-port=' + str(6000 + i), '-datadir=' + sys.path[0] + '/node_' + str(i),
+                         '-ac_supply=10000000000', '-ac_cc=2', '-addnode=127.0.0.1:6000', '-whitelist=127.0.0.1', '-listen=0', '-pubkey='+test_pubkey]
         if chain_start_mode == 'REGTEST':
             start_args.append('-regtest')
             start_args.append('-daemon')
@@ -88,6 +88,8 @@ if chain_start_mode == 'REGTEST':
            time.sleep(5)
 else:
     if int(os.environ['CLIENTS']) > 1:
+        print("Starting mining on node 2")
         proxy_1.setgenerate(True, 1)
     else:
+        print("Starting mining on node 1")
         proxy_0.setgenerate(True, 1)
