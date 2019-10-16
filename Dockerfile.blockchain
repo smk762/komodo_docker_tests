@@ -28,4 +28,4 @@ COPY komodod /data/
 COPY start_things.sh /data/
 COPY bin/init /data/
 
-CMD ./start_things.sh >> log.log
+CMD ./start_things.sh
