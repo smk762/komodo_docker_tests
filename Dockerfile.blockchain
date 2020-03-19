@@ -1,8 +1,8 @@
-FROM ubuntu:18.04
+FROM tonymorony/komodod-test:cd_release_70cc1e3_dev
 
-# optionally we can build komodod each time for sure but isnt it CI job?
-RUN apt-get update && apt-get install -y sudo python python3.6 python3-pip libgnutls28-dev libcurl4-openssl-dev libssl-dev wget unzip libcurl3-gnutls libgomp1 && pip3 install setuptools wheel slick-bitcoinrpc
+RUN apt-get update && apt-get install -y sudo python python3.7 python3-pip libgnutls28-dev libcurl4-openssl-dev libssl-dev wget unzip libcurl3-gnutls libgomp1 && pip3 install setuptools wheel slick-bitcoinrpc
 
+RUN mkdir /data && cp /komodo/komodod /komodo/komodo-cli /data/
 # SPV setup
 COPY ./bin /usr/local/bin
 RUN apt-get install -y git libsnappy-dev libbz2-dev liblz4-dev librocksdb-dev openssl && pip3 install aiohttp pylru plyvel websockets python-rocksdb && git clone https://github.com/cipig/electrumx -b verus_hash2b && cd electrumx && python3 setup.py install
@@ -24,7 +24,6 @@ EXPOSE 50001 50002 50004 8000
 EXPOSE 7000
 
 COPY start_blockchain.py /data/
-COPY komodod /data/
 COPY start_things.sh /data/
 COPY bin/init /data/
 
