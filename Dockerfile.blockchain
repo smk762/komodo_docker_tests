@@ -1,11 +1,20 @@
-FROM tonymorony/komodod-test:cd_release_70cc1e3_dev
+FROM smk762/komodo:cd_release_31040ba_dev
 
-RUN apt-get update && apt-get install -y sudo python python3.7 python3-pip libgnutls28-dev libcurl4-openssl-dev libssl-dev wget unzip libcurl3-gnutls libgomp1 && pip3 install setuptools wheel slick-bitcoinrpc
+RUN apt-get update && apt-get install -y sudo python3 python3-pip libgnutls28-dev libcurl4-openssl-dev libssl-dev wget unzip libcurl3-gnutls libgomp1
 
 RUN mkdir /data && cp /komodo/komodod /komodo/komodo-cli /data/
 # SPV setup
+RUN apt-get install -y git libsnappy-dev libbz2-dev liblz4-dev librocksdb-dev openssl 
+
+COPY ./requirements.txt /requirements.txt
+
+RUN pip install --upgrade pip && pip3 install --upgrade -r /requirements.txt
+
+
+COPY ./fetch_params.sh ./fetch_params.sh
+RUN ./fetch_params.sh && mv /root/.zcash-params/ /data/.zcash-params/
+
 COPY ./bin /usr/local/bin
-RUN apt-get install -y git libsnappy-dev libbz2-dev liblz4-dev librocksdb-dev openssl && pip3 install aiohttp pylru plyvel websockets python-rocksdb && git clone https://github.com/cipig/electrumx -b verus_hash2b && cd electrumx && python3 setup.py install
 
 VOLUME ["/data"]
 ENV HOME /data
@@ -17,14 +26,10 @@ ENV SSL_KEYFILE ${DB_DIRECTORY}/electrumx.key
 ENV HOST ""
 WORKDIR /data
 
-# spv ports
-EXPOSE 50001 50002 50004 8000
+RUN git clone https://github.com/komodoplatform/electrumx-1 && cd electrumx-1 && pip3 install . && pip3 install .[uvloop,ujson]
 
-# daemon port
-EXPOSE 7000
-
-COPY start_blockchain.py /data/
-COPY start_things.sh /data/
+COPY *.py /data/
+COPY *.sh /data/
 COPY bin/init /data/
 
 CMD ./start_things.sh

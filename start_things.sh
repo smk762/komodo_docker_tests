@@ -1,5 +1,6 @@
 #!/bin/sh
 
 python3 -u start_blockchain.py &
-sleep 10
+python3 -u add_coin_to_electrum.py &
+sleep 120
 ./init
