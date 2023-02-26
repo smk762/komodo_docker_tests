@@ -4,7 +4,7 @@ from lib_logger import logger
 
 load_dotenv()
 
-coin = os.getenv('COIN')
+coin = os.getenv('KMD_AC_NAME')
 rpcport = os.getenv('KMD_RPCPORT')
 logger.info(f"......... coin: {coin}")
 

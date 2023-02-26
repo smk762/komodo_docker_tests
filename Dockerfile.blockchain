@@ -3,8 +3,6 @@ FROM smk762/komodo:cd_release_31040ba_dev
 RUN apt-get update && apt-get install -y sudo python3 python3-pip libgnutls28-dev libcurl4-openssl-dev libssl-dev wget unzip libcurl3-gnutls libgomp1
 
 RUN mkdir /data && cp /komodo/komodod /komodo/komodo-cli /data/
-# SPV setup
-RUN apt-get install -y git libsnappy-dev libbz2-dev liblz4-dev librocksdb-dev openssl 
 
 COPY ./requirements.txt /requirements.txt
 
@@ -14,22 +12,12 @@ RUN pip install --upgrade pip && pip3 install --upgrade -r /requirements.txt
 COPY ./fetch_params.sh ./fetch_params.sh
 RUN ./fetch_params.sh && mv /root/.zcash-params/ /data/.zcash-params/
 
-COPY ./bin /usr/local/bin
 
 VOLUME ["/data"]
 ENV HOME /data
-ENV ALLOW_ROOT 1
-ENV DB_DIRECTORY /data
-ENV SERVICES=tcp://:50001,ssl://:50002,wss://:50004,rpc://0.0.0.0:8000
-ENV SSL_CERTFILE ${DB_DIRECTORY}/electrumx.crt
-ENV SSL_KEYFILE ${DB_DIRECTORY}/electrumx.key
-ENV HOST ""
 WORKDIR /data
-
-RUN git clone https://github.com/komodoplatform/electrumx-1 && cd electrumx-1 && pip3 install . && pip3 install .[uvloop,ujson]
 
 COPY *.py /data/
 COPY *.sh /data/
-COPY bin/init /data/
 
 CMD ./start_things.sh
