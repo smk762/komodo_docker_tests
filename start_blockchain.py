@@ -30,6 +30,11 @@ logger.info(f"clients_to_start: {clients_to_start}")
 logger.info(f"rpc_port: {rpc_port}")
 logger.info(f"p2p_port: {p2p_port}")
 logger.info(f"zmqport: {zmqport}")
+logger.info(f"zmqport: {zmqport}")
+logger.info(f"zmqport: {zmqport}")
+logger.info(f"zmqport: {zmqport}")
+logger.info(f"zmqport: {zmqport}")
+logger.info(f"zmqport: {zmqport}")
 logger.info(f"rpcpass: {rpcpass}")
 logger.info(f"rpcuser: {rpcuser}")
 logger.info(f"pubkey: {pubkey}")
@@ -48,10 +53,11 @@ for i in range(clients_to_start):
         conf.write(f"rpcuser={rpcuser}\n")
         conf.write(f"rpcpassword={rpcpass}\n")
         conf.write(f"rpcport={rpc_port + i}\n")
+        conf.write(f"port={p2p_port + i}\n")
         conf.write("rpcbind=0.0.0.0\n")
         conf.write("rpcallowip=0.0.0.0/0\n")
-        conf.write(f"zmqpubrawtx=tcp://{rpcip}:{zmqport}\n")
-        conf.write(f"zmqpubhashblock=tcp://{rpcip}:{zmqport}\n")
+        conf.write(f"zmqpubrawtx=tcp://127.0.0.1:{zmqport + i}\n")
+        conf.write(f"zmqpubhashblock=tcp://127.0.0.1:{zmqport + i}\n")
         conf.write(f"server=1\n")
         conf.write(f"txindex=1\n")
         conf.write(f"addressindex=1\n")
@@ -60,6 +66,14 @@ for i in range(clients_to_start):
         conf.write(f"uacomment=bitcore\n")
         conf.write(f"showmetrics=0\n")
         conf.write(f"rpcworkqueue=256\n")
+        conf.write(f"datadir={node_dir}\n")
+        conf.write("[test]\n")
+        conf.write(f"rpcport={rpc_port + i}\n")
+    with open(f"{node_dir}/{ac_name}.conf", 'r') as conf:
+        lines = conf.readlines()
+        print("contents of conf:")
+        for line in lines:
+            print(line)
 
 logger.info('config is ready')
 
@@ -67,18 +81,17 @@ logger.info('config is ready')
 for i in range(clients_to_start):
     node_dir = f"/data/node_{i}"
     # all nodes should search for first "mother" node
-    conf_path = f"{node_dir}/node_{i}/{ac_name}.conf"
-    logger.info(conf_path)
+    conf_path = f"{node_dir}/{ac_name}.conf"
+    logger.info(f"conf_path: {conf_path}")
 
     if i == 0:
-        start_args = ['./komodod', '-ac_name='+ac_name, f"-conf={conf_path}", 
-                        f'-datadir={node_dir}/node_0', '-daemon'] + ac_params
+        start_args = ['./komodod', '-ac_name='+ac_name, f'-port={p2p_port + i}', f'-rpcport={rpc_port + i}', f"-datadir={node_dir}", f"-conf={conf_path}", '-daemon'] + ac_params
     else:
-        start_args = ['./komodod', '-ac_name='+ac_name, f"-conf={conf_path}", f'-datadir={node_dir}/node_{i}',
-                         f'-addnode=127.0.0.1:{p2p_port}', '-listen=0', f'-pubkey={pubkey}', '-daemon'] + ac_params
-
+        start_args = ['./komodod', '-ac_name='+ac_name, f'-port={p2p_port + i}', f'-rpcport={rpc_port + i}', f"-datadir={node_dir}", f"-conf={conf_path}", f'-addnode=127.0.0.1:{p2p_port}',
+                    '-listen=0', f'-pubkey={pubkey}', '-daemon'] + ac_params
     if chain_start_mode == 'REGTEST':
         start_args.append('-regtest')
+    print(start_args)
     subprocess.call(start_args)
     time.sleep(5)
 
