@@ -13,7 +13,6 @@ rpc_port = int(os.getenv('KMD_RPCPORT'))
 p2p_port = int(os.getenv('KMD_P2PPORT'))
 rpcpass = os.getenv('KMD_RPCPASS')
 rpcuser = os.getenv('KMD_RPCUSER')
-rpcip = os.getenv('KMD_RPCIP')
 pubkey = os.getenv('KMD_PUBKEY')
 addr = os.getenv('KMD_ADDRESS')
 wif = os.getenv('KMD_WIF')
@@ -26,19 +25,6 @@ chain_start_mode = 'REGTEST'
 if 'CHAIN_MODE' in os.environ:
     chain_start_mode = os.getenv('CHAIN_MODE')
 
-logger.info(f"clients_to_start: {clients_to_start}")
-logger.info(f"rpc_port: {rpc_port}")
-logger.info(f"p2p_port: {p2p_port}")
-logger.info(f"zmqport: {zmqport}")
-logger.info(f"zmqport: {zmqport}")
-logger.info(f"zmqport: {zmqport}")
-logger.info(f"zmqport: {zmqport}")
-logger.info(f"zmqport: {zmqport}")
-logger.info(f"zmqport: {zmqport}")
-logger.info(f"rpcpass: {rpcpass}")
-logger.info(f"rpcuser: {rpcuser}")
-logger.info(f"pubkey: {pubkey}")
-logger.info(f"ac_name: {ac_name}")
 logger.info(f"ac_params: {ac_params}")
 
 # pre-creating separate folders and configs
@@ -56,8 +42,8 @@ for i in range(clients_to_start):
         conf.write(f"port={p2p_port + i}\n")
         conf.write("rpcbind=0.0.0.0\n")
         conf.write("rpcallowip=0.0.0.0/0\n")
-        conf.write(f"zmqpubrawtx=tcp://0.0.0.0:{zmqport + i}\n")
-        conf.write(f"zmqpubhashblock=tcp://0.0.0.0:{zmqport + i}\n")
+        conf.write(f"zmqpubrawtx=tcp://127.0.0.1:{zmqport + i}\n")
+        conf.write(f"zmqpubhashblock=tcp://127.0.0.1:{zmqport + i}\n")
         conf.write(f"server=1\n")
         conf.write(f"txindex=1\n")
         conf.write(f"addressindex=1\n")
@@ -66,6 +52,9 @@ for i in range(clients_to_start):
         conf.write(f"uacomment=bitcore\n")
         conf.write(f"showmetrics=0\n")
         conf.write(f"rpcworkqueue=256\n")
+        conf.write(f"datadir={node_dir}\n")
+        conf.write("[test]\n")
+        conf.write(f"rpcport={rpc_port + i}\n")
     with open(f"{node_dir}/{ac_name}.conf", 'r') as conf:
         lines = conf.readlines()
         print("contents of conf:")
@@ -82,9 +71,9 @@ for i in range(clients_to_start):
     logger.info(f"conf_path: {conf_path}")
 
     if i == 0:
-        start_args = ['./komodod', '-ac_name='+ac_name, f'-port={p2p_port + i}', f"-datadir={node_dir}", '-daemon'] + ac_params
+        start_args = ['./komodod', '-ac_name='+ac_name, f'-port={p2p_port + i}', f'-rpcport={rpc_port + i}', f"-datadir={node_dir}", f"-conf={conf_path}", '-daemon'] + ac_params
     else:
-        start_args = ['./komodod', '-ac_name='+ac_name, f'-port={p2p_port + i}', f"-datadir={node_dir}", f'-addnode=127.0.0.1:{p2p_port}',
+        start_args = ['./komodod', '-ac_name='+ac_name, f'-port={p2p_port + i}', f'-rpcport={rpc_port + i}', f"-datadir={node_dir}", f"-conf={conf_path}", f'-addnode=127.0.0.1:{p2p_port}',
                     '-listen=0', f'-pubkey={pubkey}', '-daemon'] + ac_params
     if chain_start_mode == 'REGTEST':
         start_args.append('-regtest')
