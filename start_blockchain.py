@@ -8,16 +8,18 @@ from lib_logger import logger
 
 load_dotenv()
 
-clients_to_start = int(os.getenv('KMD_CLIENTS'))
+clients_to_start = 2
 rpc_port = int(os.getenv('KMD_RPCPORT'))
 p2p_port = int(os.getenv('KMD_P2PPORT'))
 rpcpass = os.getenv('KMD_RPCPASS')
 rpcuser = os.getenv('KMD_RPCUSER')
+rpcip = os.getenv('KMD_RPCIP')
 pubkey = os.getenv('KMD_PUBKEY')
 addr = os.getenv('KMD_ADDRESS')
 wif = os.getenv('KMD_WIF')
 ac_name = os.getenv('KMD_AC_NAME')
 ac_params = os.getenv('KMD_AC_PARAMS').split(" ")
+zmqport = rpc_port + 2
 
 # expecting REGTEST or REGULAR there
 chain_start_mode = 'REGTEST'
@@ -27,11 +29,11 @@ if 'CHAIN_MODE' in os.environ:
 logger.info(f"clients_to_start: {clients_to_start}")
 logger.info(f"rpc_port: {rpc_port}")
 logger.info(f"p2p_port: {p2p_port}")
+logger.info(f"zmqport: {zmqport}")
 logger.info(f"rpcpass: {rpcpass}")
 logger.info(f"rpcuser: {rpcuser}")
 logger.info(f"pubkey: {pubkey}")
 logger.info(f"ac_name: {ac_name}")
-logger.info(f"ac_params: {ac_params}")
 logger.info(f"ac_params: {ac_params}")
 
 # pre-creating separate folders and configs
@@ -39,30 +41,40 @@ for i in range(clients_to_start):
     node_dir = f"/data/node_{i}"
     try:
         os.mkdir(node_dir)
-        open(f"{node_dir}/{ac_name}.conf", 'a').close()
-        with open(f"{node_dir}/{ac_name}.conf", 'a') as conf:
-            conf.write(f"rpcuser={rpcuser}\n")
-            conf.write(f"rpcpassword={rpcpass}\n")
-            conf.write(f"rpcport={rpc_port + i}\n")
-            conf.write("rpcbind=0.0.0.0\n")
-            conf.write("rpcallowip=0.0.0.0/0\n")
     except:
         logger.info(f"{node_dir} already exists, skipping conf append.")
+
+    with open(f"{node_dir}/{ac_name}.conf", 'w+') as conf:
+        conf.write(f"rpcuser={rpcuser}\n")
+        conf.write(f"rpcpassword={rpcpass}\n")
+        conf.write(f"rpcport={rpc_port + i}\n")
+        conf.write("rpcbind=0.0.0.0\n")
+        conf.write("rpcallowip=0.0.0.0/0\n")
+        conf.write(f"zmqpubrawtx=tcp://{rpcip}:{zmqport}\n")
+        conf.write(f"zmqpubhashblock=tcp://{rpcip}:{zmqport}\n")
+        conf.write(f"server=1\n")
+        conf.write(f"txindex=1\n")
+        conf.write(f"addressindex=1\n")
+        conf.write(f"timestampindex=1\n")
+        conf.write(f"spentindex=1\n")
+        conf.write(f"uacomment=bitcore\n")
+        conf.write(f"showmetrics=0\n")
+        conf.write(f"rpcworkqueue=256\n")
 
 logger.info('config is ready')
 
 #start numnodes daemons, changing folder name and port
 for i in range(clients_to_start):
+    node_dir = f"/data/node_{i}"
     # all nodes should search for first "mother" node
-    conf_path = f"{sys.path[0]}/node_{i}/{ac_name}.conf"
+    conf_path = f"{node_dir}/node_{i}/{ac_name}.conf"
     logger.info(conf_path)
 
     if i == 0:
-        start_args = ['./komodod', '-ac_name='+ac_name, f"-conf={conf_path}", f'-rpcport={rpc_port + i}',
-                         f'-port={p2p_port + i}', f'-datadir={sys.path[0]}/node_{i}', '-daemon'] + ac_params
+        start_args = ['./komodod', '-ac_name='+ac_name, f"-conf={conf_path}", 
+                        f'-datadir={node_dir}/node_0', '-daemon'] + ac_params
     else:
-        start_args = ['./komodod', '-ac_name='+ac_name, f"-conf={conf_path}", f'-rpcport={rpc_port + i}',
-                         f'-port={p2p_port + i}', f'-datadir={sys.path[0]}/node_{i}',
+        start_args = ['./komodod', '-ac_name='+ac_name, f"-conf={conf_path}", f'-datadir={node_dir}/node_{i}',
                          f'-addnode=127.0.0.1:{p2p_port}', '-listen=0', f'-pubkey={pubkey}', '-daemon'] + ac_params
 
     if chain_start_mode == 'REGTEST':
