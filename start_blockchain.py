@@ -82,9 +82,9 @@ for i in range(clients_to_start):
     logger.info(f"conf_path: {conf_path}")
 
     if i == 0:
-        start_args = ['./komodod', '-ac_name='+ac_name, f'-port={p2p_port + i}', f"-datadir={node_dir}", f"-conf={conf_path}", '-daemon'] + ac_params
+        start_args = ['./komodod', '-ac_name='+ac_name, f'-port={p2p_port + i}', f"-datadir={node_dir}", '-daemon'] + ac_params
     else:
-        start_args = ['./komodod', '-ac_name='+ac_name, f'-port={p2p_port + i}', f"-datadir={node_dir}", f"-conf={conf_path}", f'-addnode=127.0.0.1:{p2p_port}',
+        start_args = ['./komodod', '-ac_name='+ac_name, f'-port={p2p_port + i}', f"-datadir={node_dir}", f'-addnode=127.0.0.1:{p2p_port}',
                     '-listen=0', f'-pubkey={pubkey}', '-daemon'] + ac_params
     if chain_start_mode == 'REGTEST':
         start_args.append('-regtest')
