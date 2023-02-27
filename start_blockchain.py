@@ -66,9 +66,6 @@ for i in range(clients_to_start):
         conf.write(f"uacomment=bitcore\n")
         conf.write(f"showmetrics=0\n")
         conf.write(f"rpcworkqueue=256\n")
-        conf.write(f"datadir={node_dir}\n")
-        conf.write("[test]\n")
-        conf.write(f"rpcport={rpc_port + i}\n")
     with open(f"{node_dir}/{ac_name}.conf", 'r') as conf:
         lines = conf.readlines()
         print("contents of conf:")
@@ -85,9 +82,9 @@ for i in range(clients_to_start):
     logger.info(f"conf_path: {conf_path}")
 
     if i == 0:
-        start_args = ['./komodod', '-ac_name='+ac_name, f'-port={p2p_port + i}', f'-rpcport={rpc_port + i}', f"-datadir={node_dir}", f"-conf={conf_path}", '-daemon'] + ac_params
+        start_args = ['./komodod', '-ac_name='+ac_name, f'-port={p2p_port + i}', f"-datadir={node_dir}", f"-conf={conf_path}", '-daemon'] + ac_params
     else:
-        start_args = ['./komodod', '-ac_name='+ac_name, f'-port={p2p_port + i}', f'-rpcport={rpc_port + i}', f"-datadir={node_dir}", f"-conf={conf_path}", f'-addnode=127.0.0.1:{p2p_port}',
+        start_args = ['./komodod', '-ac_name='+ac_name, f'-port={p2p_port + i}', f"-datadir={node_dir}", f"-conf={conf_path}", f'-addnode=127.0.0.1:{p2p_port}',
                     '-listen=0', f'-pubkey={pubkey}', '-daemon'] + ac_params
     if chain_start_mode == 'REGTEST':
         start_args.append('-regtest')
