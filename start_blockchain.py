@@ -42,8 +42,8 @@ for i in range(clients_to_start):
         conf.write(f"port={p2p_port + i}\n")
         conf.write("rpcbind=0.0.0.0\n")
         conf.write("rpcallowip=0.0.0.0/0\n")
-        conf.write(f"zmqpubrawtx=tcp://127.0.0.1:{zmqport + i}\n")
-        conf.write(f"zmqpubhashblock=tcp://127.0.0.1:{zmqport + i}\n")
+        conf.write(f"zmqpubrawtx=tcp://0.0.0.0:{zmqport + i}\n")
+        conf.write(f"zmqpubhashblock=tcp://0.0.0.0:{zmqport + i}\n")
         conf.write(f"server=1\n")
         conf.write(f"txindex=1\n")
         conf.write(f"addressindex=1\n")
@@ -71,9 +71,9 @@ for i in range(clients_to_start):
     logger.info(f"conf_path: {conf_path}")
 
     if i == 0:
-        start_args = ['./komodod', '-ac_name='+ac_name, f'-port={p2p_port + i}', f'-rpcport={rpc_port + i}', f"-datadir={node_dir}", f"-conf={conf_path}", '-daemon'] + ac_params
+        start_args = ['./komodod', '-ac_name='+ac_name, f'-port={p2p_port + i}', f'-rpcport={rpc_port + i}', f"-datadir={node_dir}", '-daemon'] + ac_params
     else:
-        start_args = ['./komodod', '-ac_name='+ac_name, f'-port={p2p_port + i}', f'-rpcport={rpc_port + i}', f"-datadir={node_dir}", f"-conf={conf_path}", f'-addnode=127.0.0.1:{p2p_port}',
+        start_args = ['./komodod', '-ac_name='+ac_name, f'-port={p2p_port + i}', f'-rpcport={rpc_port + i}', f"-datadir={node_dir}", f'-addnode=127.0.0.1:{p2p_port}',
                     '-listen=0', f'-pubkey={pubkey}', '-daemon'] + ac_params
     if chain_start_mode == 'REGTEST':
         start_args.append('-regtest')
@@ -112,8 +112,6 @@ if chain_start_mode == 'REGTEST':
         time.sleep(2)
 else:
     if clients_to_start > 1:
-        logger.info("$$$$$$$$$$$$$$$$$$$$ Starting mining on node 2")
         proxy_1.setgenerate(True, 1)
     else:
-        logger.info("$$$$$$$$$$$$$$$$$$$$ Starting mining on node 1")
         proxy_0.setgenerate(True, 1)
